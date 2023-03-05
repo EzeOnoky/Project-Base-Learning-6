@@ -19,6 +19,8 @@ Project 6 consists of two parts:
 
 ![PBL6_1](https://user-images.githubusercontent.com/122687798/222914753-8825b4eb-b37e-46ff-a6a7-396ae48dcb26.jpg)
 
+So why this architecture, basically this is deployed for security, u dont want your data base being impacted when the web server develops an issue.
+
 Presentation Layer (PL): This is the user interface such as the client server or browser on your laptop.
 
 Business Layer (BL): This is the backend program that implements business logic. Application or Webserver
