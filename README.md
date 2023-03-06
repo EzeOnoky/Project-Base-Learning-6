@@ -117,13 +117,69 @@ Next is to create a mount point for our devices
 
 *sudo mkdir -p /home/recovery/logs*
 
+### NOTE : the -P in *sudo mkdir -p /home/recovery/logs* will auto create the folders recovery, if it does not exist already. Likewise for *sudo mkdir -p /var/www/html*....folder www is auto created if it does not exist already.
+
+
 #### Mount /var/www/html on apps-lv logical volume
 
 *sudo mount /dev/webdata-vg/apps-lv /var/www/html/*
 
-##NOTE : the -P in *sudo mkdir -p /home/recovery/logs* will auto create the folders recovery, if it does not exist already. Likewise for *sudo mkdir -p /var/www/html*....folder www is auto created if it does not exist already.
+Above is simply asking you to move this device - apps-lv into this directory - /var/www/html/
+
+![PBL6_8](https://user-images.githubusercontent.com/122687798/223030435-7bc01c5d-461d-4262-8b37-40b30df95fe0.JPG)
 
 
+#### 1t check content of /var/log/
+
+sudo ls -l /var/log/
+
+[ec2-user@ip-172-31-80-191 ~]$ sudo ls -l /var/log/
+total 536
+drwx------. 2 root   root       23 Mar  4 15:07 audit
+-rw-rw----. 1 root   utmp        0 Jan 27 05:38 btmp
+-rw-r--r--. 1 root   root     1356 Mar  6 05:36 choose_repo.log
+drwxr-x---. 2 chrony chrony      6 Aug 17  2021 chrony
+-rw-r--r--. 1 root   root   247508 Mar  6 04:26 cloud-init.log
+-rw-r-----. 1 root   adm      6589 Mar  6 04:26 cloud-init-output.log
+-rw-------. 1 root   root     3172 Mar  6 06:01 cron
+-rw-r--r--. 1 root   root     9365 Mar  6 05:36 dnf.librepo.log
+-rw-r--r--. 1 root   root    21582 Mar  6 05:36 dnf.log
+-rw-r--r--. 1 root   root     2162 Mar  6 05:36 dnf.rpm.log
+-rw-r--r--. 1 root   root      720 Mar  6 05:36 hawkey.log
+drwx------. 2 root   root        6 Dec 13 17:42 insights-client
+-rw-rw-r--. 1 root   utmp   292292 Mar  6 04:27 lastlog
+-rw-------. 1 root   root        0 Jan 27 05:38 maillog
+-rw-------. 1 root   root   206346 Mar  6 06:03 messages
+drwx------. 2 root   root        6 Jan 27 05:38 private
+lrwxrwxrwx. 1 root   root       39 Jan 27 05:38 README -> ../../usr/share/doc/systemd/README.logs
+drwxr-xr-x. 2 root   root       43 Mar  4 15:30 rhsm
+-rw-------. 1 root   root    13240 Mar  6 05:45 secure
+-rw-------. 1 root   root        0 Jan 27 05:38 spooler
+drwxr-x---. 2 sssd   sssd        6 Jun  3  2022 sssd
+-rw-------. 1 root   root        0 Jan 27 05:38 tallylog
+drwxr-xr-x. 2 root   root       23 Mar  4 15:07 tuned
+-rw-rw-r--. 1 root   utmp     6912 Mar  6 04:27 wtmp
+[ec2-user@ip-172-31-80-191 ~]$
+
+
+#### Use rsync utility to backup all the files in the log directory /var/log into /home/recovery/logs (This is required before mounting the file system)
+
+*sudo rsync -av /var/log/. /home/recovery/logs/*
+
+#### Mount /var/log on logs-lv logical volume. (REM ABOVE WARNING... 1st check the content of /var/log, ensure you backup the content before you run the MOUNT cmd. MOUNT cmd will always delete existing data on the directory, /var/log important)
+
+*sudo mount /dev/webdata-vg/logs-lv /var/log*
+
+#### Restore log files back into /var/log directory
+
+*sudo rsync -av /home/recovery/logs/. /var/log*
+
+![PBL6_9](https://user-images.githubusercontent.com/122687798/223034328-57676c8d-3230-4a35-8122-6d14a116a543.JPG)
+
+#### Update /etc/fstab file so that the mount configuration will persist after restart of the server.
+The UUID of the device will be used to update the /etc/fstab file;
+
+*sudo blkid*
 
 
 
