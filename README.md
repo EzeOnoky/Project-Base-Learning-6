@@ -51,9 +51,80 @@ Server
 
 Above pix shows our partition was successful, next on this Partitions, you are going to create physical volumes
 
-#### Install lvm2 package using *sudo yum install lvm2*. Run *sudo lvmdiskscan* command to check for available partitions.
+#### Install lvm2 package using the package manage yum *sudo yum install lvm2*. 
+
+Run *sudo lvmdiskscan* command to check for available partitions.
+
+![PBL6_4](https://user-images.githubusercontent.com/122687798/223020431-1290382f-c01a-43f6-bfb6-3720b03ac204.JPG)
 
 Note: Previously, in Ubuntu we used apt command to install packages, in RedHat/CentOS a different package manager is used, so we shall use yum command instead.
+
+#### Use *pvcreate* utility to mark each of 3 disks as physical volumes (PVs) to be used by LVM
+Above means on that you cant create the physical volume on a physical device, you have to create them on a partition which are xvdf1, xvdh1, xvdg1.
+
+*sudo pvcreate /dev/xvdf1*
+*sudo pvcreate /dev/xvdg1*
+*sudo pvcreate /dev/xvdh1*
+
+or use below to create ALL with one CMD line
+
+*sudo pvcreate /dev/xvdf1 /dev/xvdg1 /dev/xvdh1*
+
+#### Verify that your Physical volume has been created successfully by running *sudo pvs*
+
+![PBL6_5](https://user-images.githubusercontent.com/122687798/223021964-74d84420-6bee-493f-b4dd-8f52277f8586.JPG)
+
+#### Use *vgcreate* utility to add all 3 PVs to a volume group (VG). Name the VG webdata-vg
+Above means that you are going to add all 3 stand alone 10G capacity Physical Voulme(PV) into one logical volumes called Volume Group, this VG, we will call it webdata-vg, in essence, we can create or VG like database-vg, darey-vg etc
+
+*sudo vgcreate webdata-vg /dev/xvdh1 /dev/xvdg1 /dev/xvdf1*
+
+![PBL6_6](https://user-images.githubusercontent.com/122687798/223023116-0d7d281c-9cf5-4908-a393-e067c414cb37.JPG)
+
+the above has concernated all 3 PV into one VG. Now on this VG, we can now create our logical volume which u give to your servers.
+
+#### Use *lvcreate* utility to create 2 logical volumes. apps-lv (Use half of the PV size), and logs-lv Use the remaining space of the PV size. 
+*NOTE: apps-lv will be used to store data for the Website while, logs-lv will be used to store data for logs*
+
+*sudo lvcreate -n apps-lv -L 14G webdata-vg*
+*sudo lvcreate -n logs-lv -L 14G webdata-vg*
+
+#### Verify that your Logical Volume has been created successfully by running & also Verify the entire setup
+
+*sudo lvs*
+*sudo vgdisplay -v #view complete setup - VG, PV, and LV*
+*sudo lsblk*
+
+![PBL6_7](https://user-images.githubusercontent.com/122687798/223024164-895d9013-140f-44f1-9139-36e3f33aa3bf.JPG)
+
+#### So lets say our Logical Volume(LV) apps-lv gets filled up and we need expansion, how do we proceed?.
+
+If it is our traditional disk - xvdf, xvdh, xvdg, to expand, we have to remove the disk and add a larger capacity disk, but with Logical volume, this is not the case. With LV, we just add another physical disk, probably xvdi, xvdj etc, then you proceed to create a physcial volume with the added physical disk i.e *sudo pvcreate /dev/xvdi1*. After this, the new PV is added to the Volume Group - VG. this increases the size of the VG. With the extra size available, you can now allocate more capacity to the Logical Volume - LV
+
+#### Use mkfs.ext4 to format the logical volumes with ext4 filesystem
+So you have created a device /dev/webdata-vg/apps-lv & /dev/webdata-vg/logs-lv, so you need to add a file system to it.
+
+*sudo mkfs -t ext4 /dev/webdata-vg/apps-lv*
+*sudo mkfs -t ext4 /dev/webdata-vg/logs-lv*
+
+Next is to create a mount point for our devices
+
+#### Create /var/www/html directory to store website files
+
+*sudo mkdir -p /var/www/html*
+
+#### Create /home/recovery/logs to store backup of log data
+
+*sudo mkdir -p /home/recovery/logs*
+
+#### Mount /var/www/html on apps-lv logical volume
+
+*sudo mount /dev/webdata-vg/apps-lv /var/www/html/*
+
+##NOTE : the -P in *sudo mkdir -p /home/recovery/logs* will auto create the folders recovery, if it does not exist already. Likewise for *sudo mkdir -p /var/www/html*....folder www is auto created if it does not exist already.
+
+
+
 
 
 
