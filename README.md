@@ -152,6 +152,8 @@ The UUID of the device will be used to update the /etc/fstab file;
 
 *sudo blkid*
 
+START FROM 49 MINUTE
+
 
 
 
