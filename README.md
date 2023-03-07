@@ -28,7 +28,7 @@ Business Layer (BL): This is the backend program that implements business logic.
 Data Access or Management Layer (DAL): This is the layer for computer data storage and data access. Database Server or File System Server such as FTP server, or NFS 
 Server
 
-## Step 1 — Prepare a Web Server
+# STEP 1 — PPREPARE THE WEB SERVER
 
 #### Launch an EC2 instance that will serve as "Web Server". Create 3 volumes in the same AZ as your Web Server EC2, each of 10 GiB.
 
@@ -152,9 +152,187 @@ The UUID of the device will be used to update the /etc/fstab file;
 
 *sudo blkid*
 
-START FROM 49 MINUTE
+The UUID in above print out is what you will use to populate the FSTAB
+
+*sudo vi /etc/fstab*
+
+Update /etc/fstab in this format using your own UUID and rememeber to remove the leading and ending quotes.
+
+#### Test the configuration and reload the daemon
+
+*sudo mount -a*
+*sudo systemctl daemon-reload*
+ 
+#### So we have updated the FSTAB, Verify your setup by running *df -h* , output must look like this:
+
+![PBL6_10](https://user-images.githubusercontent.com/122687798/223326282-789a007a-aed4-4390-86e7-8c715aded86a.JPG)
+
+# STEP 2 — PREPARE THE DATABASE SERVER
+
+Launch a second RedHat EC2 instance that will have a role – ‘DB Server’
+Repeat the same steps as for the Web Server, but instead of apps-lv create db-lv and mount it to /db directory instead of /var/www/html/.
+
+#### 1 - Create Volume
+#### 2 - Attach it
+
+![PBL6_11](https://user-images.githubusercontent.com/122687798/223327645-19420cfa-20df-4989-bc24-33db2202244e.JPG)
+
+#### 3 - Connect to your EC2 Instance for the database server and execute below CMD and partition the created disk volume
+
+#### Start with disk volume - xvdf
+lsblk
+
+sudo gdisk /dev/xvdf
+
+[ec2-user@ip-172-31-92-248 ~]$ *sudo gdisk /dev/xvdf*
+
+GPT fdisk (gdisk) version 1.0.7
+
+Partition table scan:
+
+  MBR: not present
+  
+  BSD: not present
+  
+  APM: not present
+  
+  GPT: not present
+  
+Creating new GPT entries in memory.
+
+Command (? for help): *n
+
+Partition number (1-128, default 1):
+
+First sector (34-20971486, default = 2048) or {+-}size{KMGTP}:
+
+Last sector (2048-20971486, default = 20971486) or {+-}size{KMGTP}:
+
+Current type is 8300 (Linux filesystem)
+
+Hex code or GUID (L to show codes, Enter = 8300): *8e00*
+
+Changed type of partition to 'Linux LVM'
+
+Command (? for help): *p*
+
+Disk /dev/xvdf: 20971520 sectors, 10.0 GiB
+
+Sector size (logical/physical): 512/512 bytes
+
+Disk identifier (GUID): AB0C9EE3-419D-421C-8C8C-B8A79CE87782
+
+Partition table holds up to 128 entries
+
+Main partition table begins at sector 2 and ends at sector 33
+
+First usable sector is 34, last usable sector is 20971486
+
+Partitions will be aligned on 2048-sector boundaries
+
+Total free space is 2014 sectors (1007.0 KiB)
+
+Number  Start (sector)    End (sector)  Size       Code  Name
+   1            2048        20971486   10.0 GiB    8E00  Linux LVM
+
+Command (? for help): *w*
+
+Final checks complete. About to write GPT data. THIS WILL OVERWRITE EXISTING
+PARTITIONS!!
+
+Do you want to proceed? (Y/N): *Y*
+
+OK; writing new GUID partition table (GPT) to /dev/xvdf.
+
+The operation has completed successfully.
+
+[ec2-user@ip-172-31-92-248 ~]$
+
+#### Now we move to the next disk volume - xvdg
+
+![PBL6_12](https://user-images.githubusercontent.com/122687798/223331183-ea6b533a-9b8e-4f1c-8a99-5a50f8b8b52e.JPG)
+
+#### Now we move to the next disk volume - xvdh
+
+SO we have partitioning of our 3 disk volume successfully done. do *lsblk* to confirm this.
+
+![PBL6_13](https://user-images.githubusercontent.com/122687798/223331961-c6649a8d-32dd-455d-8fcd-a9b6d34aab92.JPG)
+
+#### 4 Install the LVM2 - Logical Volume Management
+
+*sudo yum install lvm2 -y*
+
+#### 5 Mark each of 3 disks partitions as physical volumes (PVs) to be used by LVM, use the CMD - pvcreate
+
+*sudo pvcreate /dev/xvdf1 /dev/xvdg1 /dev/xvdh1*
+
+#### 6 Now procced to create the Volume Group VG using the 3 PVs
+
+*sudo vgcreate vg-database /dev/xvdf1 /dev/xvdg1 /dev/xvdh1*
+
+#### 7 Now we create our Logical Volume LV, name it db-lv, give it a 20G size
+
+ *sudo lvcreate -n db-lv -L 20G vg-database*
+
+Recall for the Web server, we created Logical Volume : apps-lv, in the Database Server, we are creating db-lv and mount it to /db directory instead of /var/www/html/ as was done in the Web Server
+
+#### 8 Create a directory in the root( / ), name it db, then Make the new LV a file system
+
+*sudo mkdir /db*
+*sudo mkfs.ext4 /dev/vg-database/db-lv*
+
+#### 9 Now mount the LV, but b4 u do, ensure u check and confirm the directory /db is empty
+
+*sudo ls -l /db*
+*sudo mount /dev/vg-database/db-lv /db*  so u mounted the content of /dev/vg-database/db-lv into /db
+
+![PBL6_14](https://user-images.githubusercontent.com/122687798/223337893-d68d105d-db3d-4d9e-bd8f-93c8ddcbbed6.JPG)
+Our Mount was successful !
+
+#### 10 Now make the mount permanent by putting it in the /FSTAB and doing a system reload
+
+*sudo vi /etc/fstab*
+*sudo mount -a*
+*sudo systemctl daemon-reload*
+*df -h*
 
 
+# STEP 3 — INSTALL WORDPRESS ON THE WEB SERVER EC2
+
+#### Update the repository - this will take some time
+
+*sudo yum -y update
+
+#### Install wget, Apache and it’s dependencies
+
+*sudo yum -y install wget httpd php php-mysqlnd php-fpm php-json
+
+*sudo dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm*
 
 
+#### Start Apache
+
+*sudo systemctl enable httpd
+*sudo systemctl start httpd
+
+#### To install PHP and it’s depemdencies
+
+sudo yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+sudo yum install yum-utils http://rpms.remirepo.net/enterprise/remi-release-8.rpm
+sudo yum module list php
+sudo yum module reset php
+sudo yum module enable php:remi-7.4
+sudo yum install php php-opcache php-gd php-curl php-mysqlnd
+sudo systemctl start php-fpm
+sudo systemctl enable php-fpm
+setsebool -P httpd_execmem 1
+
+#### Restart Apache
+
+*sudo systemctl restart httpd
+
+#### Download wordpress and copy wordpress to var/www/html
+
+
+STOPPED: 1hr 15 minutes
 
