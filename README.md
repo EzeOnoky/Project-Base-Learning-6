@@ -43,13 +43,13 @@ Server
 ![PBL6_2](https://user-images.githubusercontent.com/122687798/222915193-284cd922-e024-445d-9464-49987e877b78.JPG)
 
 #### Use gdisk utility to create a single partition on each of the 3 disks - xvdf, xvdh, xvdg (*Learn how to use gdisk & fdisk and logical volume management*) 
-1st we want to create a partition on the physical disk -  xvdf, xvdh, xvdg, the we switch to logical volume management.
+1st we want to create a partition on the physical disk -  xvdf, xvdh, xvdg, then we switch to logical volume management.
 
-*sudo gdisk /dev/xvdf* - to log in to the PHYSICAL DISK VOLUME
+*sudo gdisk /dev/xvdf* - to log in to the PHYSICAL DISK VOLUME and create partitions
 
 ![PBL6_3](https://user-images.githubusercontent.com/122687798/222916376-85799228-7c1b-4093-86c3-a0fcc4b05646.JPG)
 
-Above pix shows our partition was successful, next on this Partitions, you are going to create physical volumes
+Above pix shows our partition was successful, so from physical disk xvdf, xvdg, xvdh, we have created partitions  xvdf1, xvdg1, xvdh1. Next on this Partitions, we are going to create physical volumes.
 
 #### Install lvm2 package using the package manage yum *sudo yum install lvm2*. 
 
@@ -60,7 +60,7 @@ Run *sudo lvmdiskscan* command to check for available partitions.
 Note: Previously, in Ubuntu we used apt command to install packages, in RedHat/CentOS a different package manager is used, so we shall use yum command instead.
 
 #### Use *pvcreate* utility to mark each of 3 disks as physical volumes (PVs) to be used by LVM
-Above means on that you cant create the physical volume on a physical device, you have to create them on a partition which are xvdf1, xvdh1, xvdg1.
+Above means on that you cannot create the physical volume on a physical device, you have to create them on a partition which are xvdf1, xvdh1, xvdg1.
 
 *sudo pvcreate /dev/xvdf1*
 *sudo pvcreate /dev/xvdg1*
@@ -75,16 +75,17 @@ or use below to create ALL with one CMD line
 ![PBL6_5](https://user-images.githubusercontent.com/122687798/223021964-74d84420-6bee-493f-b4dd-8f52277f8586.JPG)
 
 #### Use *vgcreate* utility to add all 3 PVs to a volume group (VG). Name the VG webdata-vg
-Above means that you are going to add all 3 stand alone 10G capacity Physical Voulme(PV) into one logical volumes called Volume Group, this VG, we will call it webdata-vg, in essence, we can create or VG like database-vg, darey-vg etc
 
-*sudo vgcreate webdata-vg /dev/xvdh1 /dev/xvdg1 /dev/xvdf1*
+Above means that you are going to add all 3 stand alone 10G capacity Physical Voulme(PV) into one logical volumes called Volume Group, this VG, we will call it webdata-vg, in essence, we can create or VG like database-vg, darey-vg etc, creating this VG is a perequisite for creation of a logical volume. You cannot create logical volume on a partitioned physical volume. Volume Group gives you the flexibility to expand your disk space. lets say you desire to expand your infrastructure, after the physical disk is added, disk partioning is done, the partitioned physical volume is add to the VG. After this, the logical volume can now be expanded.
+
+*sudo vgcreate webdata-vg /dev/xvdh1 /dev/xvdg1 /dev/xvdf1*   Notice the 3 10g PV has been concernated to for the 29G VG.
 
 ![PBL6_6](https://user-images.githubusercontent.com/122687798/223023116-0d7d281c-9cf5-4908-a393-e067c414cb37.JPG)
 
 the above has concernated all 3 PV into one VG. Now on this VG, we can now create our logical volume which u give to your servers.
 
 #### Use *lvcreate* utility to create 2 logical volumes. apps-lv (Use half of the PV size), and logs-lv Use the remaining space of the PV size. 
-*NOTE: apps-lv will be used to store data for the Website while, logs-lv will be used to store data for logs*
+*NOTE: apps-lv will be used to store data for the Website while, logs-lv will be used to store data for logs* This Logical Volume is now the actual disk you give to your servers(DB & Web server)
 
 *sudo lvcreate -n apps-lv -L 14G webdata-vg*
 *sudo lvcreate -n logs-lv -L 14G webdata-vg*
@@ -102,12 +103,12 @@ the above has concernated all 3 PV into one VG. Now on this VG, we can now creat
 If it is our traditional disk - xvdf, xvdh, xvdg, to expand, we have to remove the disk and add a larger capacity disk, but with Logical volume, this is not the case. With LV, we just add another physical disk, probably xvdi, xvdj etc, then you proceed to create a physcial volume with the added physical disk i.e *sudo pvcreate /dev/xvdi1*. After this, the new PV is added to the Volume Group - VG. this increases the size of the VG. With the extra size available, you can now allocate more capacity to the Logical Volume - LV
 
 #### Use mkfs.ext4 to format the logical volumes with ext4 filesystem
-So you have created a device /dev/webdata-vg/apps-lv & /dev/webdata-vg/logs-lv, so you need to add a file system to it.
+So you have created a the logical volumes /dev/webdata-vg/apps-lv & /dev/webdata-vg/logs-lv, now you need to make it a file system.
 
 *sudo mkfs -t ext4 /dev/webdata-vg/apps-lv*
 *sudo mkfs -t ext4 /dev/webdata-vg/logs-lv*
 
-Next is to create a mount point for our devices
+Next is to create a mount point for our devices(logical volume)
 
 #### Create /var/www/html directory to store website files
 
@@ -152,7 +153,7 @@ The UUID of the device will be used to update the /etc/fstab file;
 
 *sudo blkid*
 
-The UUID in above print out is what you will use to populate the FSTAB
+The UUID in above print out is what you will use to populate the FSTAB. NB - UUID is equivalent to the created LV
 
 *sudo vi /etc/fstab*
 
