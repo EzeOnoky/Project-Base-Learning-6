@@ -108,6 +108,7 @@ So you have created a the logical volumes /dev/webdata-vg/apps-lv & /dev/webdata
 *sudo mkfs -t ext4 /dev/webdata-vg/apps-lv*
 *sudo mkfs -t ext4 /dev/webdata-vg/logs-lv*
 
+
 Next is to create a mount point for our devices(logical volume)
 
 #### Create /var/www/html directory to store website files
@@ -145,6 +146,8 @@ sudo ls -l /var/log/
 #### Restore log files back into /var/log directory
 
 *sudo rsync -av /home/recovery/logs/. /var/log*
+
+![PBL 6_9A](https://user-images.githubusercontent.com/122687798/236599553-92efe306-6586-41ab-b97a-b31e34a99c7b.jpg)
 
 ![PBL6_9](https://user-images.githubusercontent.com/122687798/223034328-57676c8d-3230-4a35-8122-6d14a116a543.JPG)
 
