@@ -274,3 +274,105 @@ Below is the final setup of Disk for the Web Server and The Database Server
 - Restart Apache
 
 - `sudo systemctl restart httpd`
+
+- Download wordpress and copy wordpress to **var/www/html**
+
+```
+ mkdir wordpress
+ cd wordpress
+ sudo wget http://wordpress.org/latest.tar.gz
+ sudo tar xzvf latest.tar.gz
+ sudo rm -rf latest.tar.gz
+ cp wordpress/wp-config-sample.php wordpress/wp-config.php
+ cp -R wordpress /var/www/html/
+```
+
+- Configure SELinux Policies
+
+```
+ sudo chown -R apache:apache /var/www/html/wordpress
+ sudo chcon -t httpd_sys_rw_content_t /var/www/html/wordpress -R
+ sudo setsebool -P httpd_can_network_connect=1
+```
+
+**Step 4 — Install MySQL on your DB Server EC2**
+
+```
+sudo yum update
+sudo yum install mysql-server -y
+```
+
+- Verify that the service is up and running by using `sudo systemctl status mysqld`, if it is not running, restart the service and enable it so it will be running even after reboot:
+
+```
+sudo systemctl restart mysqld
+sudo systemctl enable mysqld
+```
+
+- A password was set for the user using `sudo mysql_secure_installation`. A simple password was set
+
+**Step 5 — Configure DB to work with WordPress**
+
+- Now with a password set for root user
+
+```
+ sudo mysql -u root -p
+ CREATE DATABASE wordpress;
+ CREATE USER 'Blessing'@'%' IDENTIFIED WITH mysql_native_password BY 'Ikenna80';
+ GRANT ALL ON wordpress.* TO 'Blessing'@'%' WITH GRANT OPTION;
+ FLUSH PRIVILEGES;
+ SHOW DATABASES;
+``` 
+
+![PBL6_17](https://user-images.githubusercontent.com/122687798/236685846-34cd4f3f-f10f-4f0c-8637-f905c7953199.JPG)
+
+- I exited using `exit`
+
+- After this, I set up the bind address using `sudo vi /etc/my.cnf`
+
+![PBL6_18](https://user-images.githubusercontent.com/122687798/236685978-d66f376b-f965-4241-b957-58180a94cb2d.JPG)
+
+- I restarted the service using `sudo systemctl restart mysqld`
+
+- Back to the **web server** wp-config.php was edited using `sudo vi wp-config.php`
+
+![PBL6_19](https://user-images.githubusercontent.com/122687798/236686091-dc5b4cd5-e5c0-4e9d-b99f-76357cd5f63c.JPG)
+
+- I restarted the service using `sudo systemctl restart httpd`
+
+- In order to see the default page of wordpress, the default web page of Apache was disabled using
+
+- `sudo mv /etc/httpd/conf.d/welcome.conf /etc/httpd/conf.d/welcome.conf_backup`
+
+**Step 6 — Configure WordPress to connect to remote database**
+
+- **Hint**: Do not forget to open MySQL port 3306 on DB Server EC2. For extra security, you shall allow access to the DB server **ONLY** from your Web Server’s IP address, so in the Inbound Rule configuration specify source as /32
+
+![PBL6_20](https://user-images.githubusercontent.com/122687798/236686213-49b8d987-b509-4fec-8e89-25a8ad103b29.JPG)
+
+- I tested to see that I can connect from my Web Server to my DB server using
+
+- `sudo mysql -h private IP of the database server -u username -p`
+
+- I successfully execute `SHOW DATABASES`; command to see a list of existing databases.
+
+![PBL6_21](https://user-images.githubusercontent.com/122687798/236686361-0da74aa4-dc6c-4183-892c-bde51166ac88.JPG)
+
+- I changed permissions and configuration so Apache could use WordPress by using the following commands:
+
+```
+ sudo chown -R apache:apache /var/www/html/
+ sudo chcon -t httpd_sys_rw_content_t /var/www/html/ -R
+ sudo setsebool -P httpd_can_network_connect=1
+ sudo setsebool -P httpd_can_network_connect_db 1
+```
+
+- Enable TCP port 80 in Inbound Rules configuration for your Web Server EC2 (enable from everywhere 0.0.0.0/0 or from your workstation’s IP)
+
+- Try to access from your browser the link to your WordPress
+
+- `http://<Web-Server-Public-IP-Address>/wordpress/
+
+![PBL6_22](https://user-images.githubusercontent.com/122687798/236686712-8688dd49-bc48-40ab-9c0b-0de1769d7af3.JPG)
+
+# CONGRATULATIONS EZE, You have learned how to configure Linux storage susbystem and have also deployed a full-scale Web Solution using WordPress CMS and MySQL RDBMS!
