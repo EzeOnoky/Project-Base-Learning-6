@@ -242,29 +242,35 @@ Below is the final setup of Disk for the Web Server and The Database Server
 
 # STEP 3 — INSTALL WORDPRESS ON THE WEB SERVER EC2
 
-#### Update the repository
-*sudo yum -y update*
+- Update the repository
 
-#### Install wget, Apache and it’s dependencies
+- `sudo yum -y update`
 
-*sudo yum -y install wget httpd php php-mysqlnd php-fpm php-json*
+- Install wget, Apache and it’s dependencies
 
-#### Start Apache
+- `sudo yum -y install wget httpd php php-mysqlnd php-fpm php-json`
 
-*sudo systemctl enable httpd*
+- Start Apache
 
-*sudo systemctl start httpd*
+- `sudo systemctl enable httpd`
+- `sudo systemctl start httpd`
 
-#### To install PHP and it’s depemdencies, Understands the redhat server version you are working with, because this will determine the RHEL version of EPEL and Remirepo of the PHP dependencies to install
+- To install PHP and it’s depemdencies
 
- *sudo yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
- 
- *sudo yum install yum-utils http://rpms.remirepo.net/enterprise/remi-release-9.rpm
- 
- *sudo yum module list php
- *sudo yum module reset php
- *sudo yum module enable php:remi-8.1
- *sudo yum install php php-opcache php-gd php-curl php-mysqlnd
- *sudo systemctl start php-fpm
- *sudo systemctl enable php-fpm
- *setsebool -P httpd_execmem 1
+- Understands the redhat server version you are working with cause this will determine the **RHEL version of EPEL and Remirepo of the PHP dependencies to install**
+
+```
+ sudo yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+ sudo yum install yum-utils http://rpms.remirepo.net/enterprise/remi-release-9.rpm
+ sudo yum module list php
+ sudo yum module reset php
+ sudo yum module enable php:remi-8.1
+ sudo yum install php php-opcache php-gd php-curl php-mysqlnd
+ sudo systemctl start php-fpm
+ sudo systemctl enable php-fpm
+ setsebool -P httpd_execmem 1
+```
+
+- Restart Apache
+
+- `sudo systemctl restart httpd`
