@@ -146,9 +146,7 @@ sudo ls -l /var/log/
 #### Restore log files back into /var/log directory
 
 *sudo rsync -av /home/recovery/logs/. /var/log*
-
 ![PBL 6_9A](https://user-images.githubusercontent.com/122687798/236599553-92efe306-6586-41ab-b97a-b31e34a99c7b.jpg)
-
 ![PBL6_9](https://user-images.githubusercontent.com/122687798/223034328-57676c8d-3230-4a35-8122-6d14a116a543.JPG)
 
 #### Update /etc/fstab file so that the mount configuration will persist after restart of the server.
@@ -186,69 +184,6 @@ Repeat the same steps as for the Web Server, but instead of apps-lv create db-lv
 #### Start with disk volume - xvdf
 lsblk
 
-sudo gdisk /dev/xvdf
-
-[ec2-user@ip-172-31-92-248 ~]$ *sudo gdisk /dev/xvdf*
-
-GPT fdisk (gdisk) version 1.0.7
-
-Partition table scan:
-
-  MBR: not present
-  
-  BSD: not present
-  
-  APM: not present
-  
-  GPT: not present
-  
-Creating new GPT entries in memory.
-
-Command (? for help): *n
-
-Partition number (1-128, default 1):
-
-First sector (34-20971486, default = 2048) or {+-}size{KMGTP}:
-
-Last sector (2048-20971486, default = 20971486) or {+-}size{KMGTP}:
-
-Current type is 8300 (Linux filesystem)
-
-Hex code or GUID (L to show codes, Enter = 8300): *8e00*
-
-Changed type of partition to 'Linux LVM'
-
-Command (? for help): *p*
-
-Disk /dev/xvdf: 20971520 sectors, 10.0 GiB
-
-Sector size (logical/physical): 512/512 bytes
-
-Disk identifier (GUID): AB0C9EE3-419D-421C-8C8C-B8A79CE87782
-
-Partition table holds up to 128 entries
-
-Main partition table begins at sector 2 and ends at sector 33
-
-First usable sector is 34, last usable sector is 20971486
-
-Partitions will be aligned on 2048-sector boundaries
-
-Total free space is 2014 sectors (1007.0 KiB)
-
-Number  Start (sector)    End (sector)  Size       Code  Name
-   1            2048        20971486   10.0 GiB    8E00  Linux LVM
-
-Command (? for help): *w*
-
-Final checks complete. About to write GPT data. THIS WILL OVERWRITE EXISTING
-PARTITIONS!!
-
-Do you want to proceed? (Y/N): *Y*
-
-OK; writing new GUID partition table (GPT) to /dev/xvdf.
-
-The operation has completed successfully.
 
 [ec2-user@ip-172-31-92-248 ~]$
 
@@ -300,6 +235,10 @@ Our Mount was successful !
 *sudo systemctl daemon-reload*
 *df -h*
 
+Below is the final setup of Disk for the Web Server and The Database Server
+
+![PBL6_16](https://user-images.githubusercontent.com/122687798/236682699-5842a0d5-5b3e-47ec-b94d-b5b2fdeb5d2f.JPG)
+
 
 # STEP 3 — INSTALL WORDPRESS ON THE WEB SERVER EC2
 
@@ -332,11 +271,12 @@ sudo systemctl enable php-fpm
 setsebool -P httpd_execmem 1
 
 #### Restart Apache
-
 *sudo systemctl restart httpd
 
 #### Download wordpress and copy wordpress to var/www/html
 
+![PBL 6_10](https://user-images.githubusercontent.com/122687798/236604987-12b13202-f635-4a12-b4d4-f39839d029d3.jpg)
 
-STOPPED: 1hr 15 minutes
+
+
 
