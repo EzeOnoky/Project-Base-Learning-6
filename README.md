@@ -350,7 +350,13 @@ sudo systemctl enable mysqld
 
 ![PBL6_20](https://user-images.githubusercontent.com/122687798/236686213-49b8d987-b509-4fec-8e89-25a8ad103b29.JPG)
 
-- I tested to see that I can connect from my Web Server to my DB server using
+
+**Step 7 — Install MySQL on your Web Server EC2**
+```
+sudo yum update
+sudo yum install mysql-server -y
+```
+- I tested to see that I can connect from my Web Server to my DB server using below command, below command will not be executable on the web server if mysql is not 1st installed
 
 - `sudo mysql -h private IP of the database server -u username -p`
 
