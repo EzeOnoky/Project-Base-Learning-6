@@ -242,41 +242,35 @@ Below is the final setup of Disk for the Web Server and The Database Server
 
 # STEP 3 — INSTALL WORDPRESS ON THE WEB SERVER EC2
 
-#### Update the repository - this will take some time
+Step 2 — Prepare the Database Server
 
-*sudo yum -y update
+Launch a second RedHat EC2 instance that will have a role – ‘DB Server’ Repeat the same steps as for the Web Server, but instead of apps-lv create db-lv and mount it to /db directory instead of /var/www/html/.
+Step 3 — Install WordPress on your Web Server EC2
 
-#### Install wget, Apache and it’s dependencies
+Update the repository
 
-*sudo yum -y install wget httpd php php-mysqlnd php-fpm php-json
+sudo yum -y update
 
-*sudo dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm*
+Install wget, Apache and it’s dependencies
 
+sudo yum -y install wget httpd php php-mysqlnd php-fpm php-json
 
-#### Start Apache
+Start Apache
 
-*sudo systemctl enable httpd
-*sudo systemctl start httpd
+sudo systemctl enable httpd
 
-#### To install PHP and it’s depemdencies
+sudo systemctl start httpd
 
-sudo yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
-sudo yum install yum-utils http://rpms.remirepo.net/enterprise/remi-release-8.rpm
-sudo yum module list php
-sudo yum module reset php
-sudo yum module enable php:remi-7.4
-sudo yum install php php-opcache php-gd php-curl php-mysqlnd
-sudo systemctl start php-fpm
-sudo systemctl enable php-fpm
-setsebool -P httpd_execmem 1
+To install PHP and it’s depemdencies
 
-#### Restart Apache
-*sudo systemctl restart httpd
+Understands the redhat server version you are working with cause this will determine the RHEL version of EPEL and Remirepo of the PHP dependencies to install
 
-#### Download wordpress and copy wordpress to var/www/html
-
-![PBL 6_10](https://user-images.githubusercontent.com/122687798/236604987-12b13202-f635-4a12-b4d4-f39839d029d3.jpg)
-
-
-
-
+ sudo yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+ sudo yum install yum-utils http://rpms.remirepo.net/enterprise/remi-release-9.rpm
+ sudo yum module list php
+ sudo yum module reset php
+ sudo yum module enable php:remi-8.1
+ sudo yum install php php-opcache php-gd php-curl php-mysqlnd
+ sudo systemctl start php-fpm
+ sudo systemctl enable php-fpm
+ setsebool -P httpd_execmem 1
